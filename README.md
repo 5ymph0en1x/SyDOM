@@ -15,6 +15,8 @@ Execution
 
 `python sydom.py`
 
+During the first run, the script will automatically generate a model (if missing) based on the 3 previous days of price action. This model is retrained every day at 6:00 AM UTC. Basically, you don't have anything to do once the bot is launched...
+
 ------------------------------------
 
 Donations to allow further developments
