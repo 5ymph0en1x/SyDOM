@@ -33,6 +33,7 @@ bb_protect = True  # Activate Bollinger Bands protection
 graph_rsi = False  # Draw real-time RSI values
 ############
 ######################################
+
 ws_bmex = BitMEXWebsocket(endpoint=API_path_bmex, symbol=instrument_bmex, api_key=API_key_bmex, api_secret=API_secret_bmex)
 client = bitmex.bitmex(test=False, api_key=API_key_bmex, api_secret=API_secret_bmex)
 bb = bitmex.BollingerCalculus(instrument=instrument_bmex, period=bb_period, test=False, api_key=API_key_bmex, api_secret=API_secret_bmex)
