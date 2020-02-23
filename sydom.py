@@ -285,7 +285,7 @@ def fire_buy(neutralize=False):
             ask_snapshot = matrix_bmex_ticker[1]
             bid_snapshot = matrix_bmex_ticker[2]
             # counter += 1
-            if ((counter >= 5 or time_actual > time_cached + 20000) and neutralize is False) \
+            if ((time_actual > time_cached + 20000) and neutralize is False) \
                     or (bb.get_verdict() != 1 and neutralize is True):
                 print('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
@@ -338,7 +338,7 @@ def fire_sell(neutralize=False):
             ask_snapshot = matrix_bmex_ticker[1]
             bid_snapshot = matrix_bmex_ticker[2]
             # counter += 1
-            if ((counter >= 5 or time_actual > time_cached + 20000) and neutralize is False) \
+            if ((time_actual > time_cached + 20000) and neutralize is False) \
                     or (bb.get_verdict() != -1 and neutralize is True):
                 print('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
@@ -537,14 +537,14 @@ while ws_bmex.ws.sock.connected:
                     bb_verdict = bb.get_verdict()
                 else:
                     bb_verdict = 0
-                if verdict > model_thr and dom_rsi[-1] > rsi_thr_upper and (bb_verdict != 1 or bb_verdict != -1):
+                if verdict > model_thr and dom_rsi[-1] > rsi_thr_upper and bb_verdict != 1 and bb_verdict != -1:
                     if abs(ws_bmex.open_positions()) < max_pos\
                             or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() > 0):
                         print('SELL ! RSI: ' + str(dom_rsi[-1]))
                         sell_action = fire_sell()
                         if sell_action is True:
                             print('Balance: ' + str(ws_bmex.wallet_balance()))
-                if verdict < -model_thr and dom_rsi[-1] < rsi_thr_downer and (bb_verdict != 1 or bb_verdict != -1):
+                if verdict < -model_thr and dom_rsi[-1] < rsi_thr_downer and bb_verdict != 1 and bb_verdict != -1:
                     if abs(ws_bmex.open_positions()) < max_pos\
                             or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() < 0):
                         print('BUY ! RSI: ' + str(dom_rsi[-1]))
