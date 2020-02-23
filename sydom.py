@@ -286,7 +286,7 @@ def fire_buy(neutralize=False):
             bid_snapshot = matrix_bmex_ticker[2]
             # counter += 1
             if ((time_actual > time_cached + 20000) and neutralize is False) \
-                    or (bb.get_verdict() != 1 and neutralize is True):
+                    or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 print('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
                 if neutralize is True:
@@ -339,7 +339,7 @@ def fire_sell(neutralize=False):
             bid_snapshot = matrix_bmex_ticker[2]
             # counter += 1
             if ((time_actual > time_cached + 20000) and neutralize is False) \
-                    or (bb.get_verdict() != -1 and neutralize is True):
+                    or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 print('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
                 if neutralize is True:
