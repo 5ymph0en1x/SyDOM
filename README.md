@@ -19,6 +19,17 @@ During the first run, the script will automatically generate a model (if missing
 
 ------------------------------------
 
+<p align="center">
+  <img width="640" src="predict_out.png">
+</p>
+
+This is what you get at the end of each model generation. It helps to check if the model_thr setting value is optimum. You have to look for a level where the spikes are about to reverse. Generally, 0.05 for ETHUSD is fine... This value is in ABSOLUTE terms !
+
+------------------------------------
+
 Donations to allow further developments
 
 BTC: 3BMEXbS4Neu5KwsiATuZVowmwYD3UPMuxo
+
+## Disclaimer
+The article and the relevant codes and content are purely informative and none of the information provided constitutes any recommendation regarding any security, transaction or investment strategy for any specific person. The implementation described in the article could be risky and the market condition could be volatile and differ from the period covered above. All trading strategies and tools are implemented at the users’ own risk.
