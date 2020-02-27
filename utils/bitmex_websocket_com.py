@@ -8,6 +8,7 @@ import urllib
 import math
 from utils.api_key import generate_nonce, generate_signature
 
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 # Naive implementation of connecting to BitMEX websocket for streaming realtime data.
 # The Marketmaker still interacts with this as if it were a REST Endpoint, but now it can get
@@ -20,7 +21,7 @@ from utils.api_key import generate_nonce, generate_signature
 class BitMEXWebsocket:
 
     # Don't grow a table larger than this amount. Helps cap memory usage.
-    MAX_TABLE_LEN = 200
+    MAX_TABLE_LEN = 500
 
     def __init__(self, endpoint, symbol, api_key=None, api_secret=None):
         '''Connect to the websocket and initialize data stores.'''
@@ -108,6 +109,11 @@ class BitMEXWebsocket:
         '''Get recent trades.'''
         # print("positions", self.data['position'][0]['currentQty'])
         return self.data['position'][0]['currentQty']
+
+    def open_price(self):
+        '''Get recent trades.'''
+        # print("positions", self.data['position'][0]['currentQty'])
+        return self.data['position'][0]['avgEntryPrice']
 
     def open_stops(self):
         '''Get recent trades.'''

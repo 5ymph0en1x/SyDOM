@@ -4,96 +4,14 @@ except ImportError:
     from urlparse import urlparse
 
 import time, hashlib, hmac
-import pandas as pd
-import threading
-from time import sleep
-from datetime import datetime as dt, timedelta
+import logging
 from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient, Authenticator
 from bravado.swagger_model import Loader
 
 # swagger spec's formats to exclude. this help to avoid warning in your console.
 EXCLUDE_SWG_FORMATS = ['JSON', 'guid']
-
-
-class BollingerCalculus:
-
-    def __init__(self, instrument, period, test, api_key, api_secret):
-        self.instrument = instrument
-        self.server_time = dt.utcnow()
-        self.period = period
-        self.test = test
-        self.api_key = api_key
-        self.api_secret = api_secret
-
-        self.df = pd.DataFrame(columns=['Date', 'Close'])
-        self.verdict = 0
-
-    def retrieve_data(self, server_time, k):
-        time_starter = server_time + timedelta(seconds=1) - timedelta(minutes=k)
-        # print(time_starter)
-        client = bitmex(test=self.test, api_key=self.api_key, api_secret=self.api_secret)
-        self.df = pd.DataFrame(columns=['Date', 'Close'])
-        while len(self.df) < k:
-            self.df = pd.DataFrame(columns=['Date', 'Close'])
-            data = client.Trade.Trade_getBucketed(symbol=self.instrument, binSize="1m", count=k,
-                                                  startTime=time_starter).result()
-            # print(len(data[0]))
-            p = 0
-            for i in data[0]:
-                self.df.loc[p] = pd.Series({'Date': i['timestamp'], 'Close': i['close']})
-                p += 1
-            # print(str(len(df)) + ' / ' + str(df))
-            sleep(1.0)
-        # df = df[::-1]  # reverse the list
-        return
-
-    def compute_bb(self):
-        server_minute_cached = None
-        while True:
-            actual_time = dt.utcnow()
-            dt2ts = dt.utcnow().timestamp()
-            dt2retrieval = actual_time
-            server_minute = int(dt2ts // 60 % 60)
-            if server_minute_cached != server_minute:
-                server_minute_cached = server_minute
-                print('Updating BB')
-                self.retrieve_data(dt2retrieval, self.period)
-                self.df['MA'] = self.df['Close'].rolling(window=self.period).mean()
-                self.df['STD'] = self.df['Close'].rolling(window=self.period).std()
-                self.df['Upper_Band'] = self.df['MA'] + (self.df['STD'] * 2)
-                self.df['Lower_Band'] = self.df['MA'] - (self.df['STD'] * 2)
-                self.df['Upper_Band_'] = self.df['MA'] + (self.df['STD'])
-                self.df['Lower_Band_'] = self.df['MA'] - (self.df['STD'])
-                # print(self.df.tail(5))
-                last_data = self.df[-1:]
-                # print(last_data)
-                # exit()
-                if last_data.iloc[0].at['Close'] > last_data.iloc[0].at['Upper_Band']:
-                    print('BB: Excess to the upside !')
-                    self.verdict = 1
-                elif last_data.iloc[0].at['Close'] < last_data.iloc[0].at['Lower_Band']:
-                    print('BB: Excess to the downside !')
-                    self.verdict = -1
-                elif last_data.iloc[0].at['Close'] > last_data.iloc[0].at['Lower_Band'] and last_data.iloc[0].at['Close'] < last_data.iloc[0].at['Lower_Band_']:
-                    print('BB: No sell allowed !')
-                    self.verdict = -0.5
-                elif last_data.iloc[0].at['Close'] < last_data.iloc[0].at['Upper_Band'] and last_data.iloc[0].at['Close'] > last_data.iloc[0].at['Upper_Band_']:
-                    print('BB: No buy allowed !')
-                    self.verdict = 0.5
-                else:
-                    print('Close: ' + str(last_data.iloc[0].at['Close'])
-                          + ' / Upper: ' + str(last_data.iloc[0].at['Upper_Band'])
-                          + ' / Downer: ' + str(last_data.iloc[0].at['Lower_Band']))
-                    self.verdict = 0
-
-    def start_bb(self):
-        thread = threading.Thread(target=self.compute_bb)
-        thread.start()
-
-    def get_verdict(self):
-        return self.verdict
-
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
 class APIKeyAuthenticator(Authenticator):

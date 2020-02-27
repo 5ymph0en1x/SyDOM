@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 from datetime import datetime as dt
 from datetime import timedelta
@@ -7,9 +8,9 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 import seaborn as sns
 import warnings
-import sys
 
 warnings.filterwarnings('ignore')
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 ##################
 time_span = 3  # Time in days covered by analysis
@@ -17,20 +18,10 @@ display_graph = False
 ##################
 
 
-def progress(count, total, status=''):
-    bar_len = 60
-    filled_len = int(round(bar_len * count / float(total)))
-
-    percents = round(100.0 * count / float(total), 1)
-    bar = '=' * filled_len + '-' * (bar_len - filled_len)
-
-    sys.stdout.write('[%s] %s%s ...%s\r' % (bar, percents, '%', status))
-    sys.stdout.flush()
-
-
 class AutoTrainModel:
 
     def __init__(self, filename, symbol):
+        self.logger = logging.getLogger(__name__)
         self.filename = filename
         self.symbol = symbol
         self.v = None
@@ -75,7 +66,7 @@ class AutoTrainModel:
             trade_downloaded = pd.read_csv(url_trade, compression='gzip')
             trade_compiled = trade_compiled.append(trade_downloaded)
 
-        print('quote: ' + str(len(quote_compiled)) + ' - trade: ' + str(len(trade_compiled)))
+        self.logger.info('quote: ' + str(len(quote_compiled)) + ' - trade: ' + str(len(trade_compiled)))
 
         quote_compiled.sort_values(by=['timestamp', 'symbol'], inplace=True)
         trade_compiled.sort_values(by=['timestamp', 'symbol'], inplace=True)
@@ -93,14 +84,14 @@ class AutoTrainModel:
             sym = quote_raw['symbol'][i]
             # print(sym)
             if sym == self.symbol:
-                print(sym + ' formating...')
+                self.logger.info(sym + ' formating...')
                 data1_filtered = quote_raw.loc[quote_raw['symbol'] == sym]
                 data1_sorted = data1_filtered.sort_values(by=['timestamp'], axis=0)
                 # data1_sorted.to_csv('data/formated/hft/' + sym + '_quote.csv', index=False)
                 data2_filtered = trade_raw.loc[trade_raw['symbol'] == sym]
                 data2_sorted = data2_filtered.sort_values(by=['timestamp'], axis=0)
                 # data2_sorted.to_csv('data/formated/hft/' + sym + '_trade.csv', index=False)
-                print(sym + ' done')
+                self.logger.info(sym + ' done')
                 break
 
         quote_loaded = data1_sorted.copy()
@@ -227,7 +218,7 @@ class AutoTrainModel:
             OIRFeatureList.append(OIRString)
             DF[VOIString] = DF['VOI'].shift(i)/DF['Spread']
             DF[OIRString] = DF['OIR'].shift(i)/DF['Spread']
-        print(DF.head(10))
+        # print(DF.head(10))
 
         featureList = VOIFeatureList
         featureList.extend(OIRFeatureList)
@@ -253,12 +244,14 @@ class AutoTrainModel:
         # predictions = model.predict(X)
 
         # Print out the statistics
-        print(model.summary())
+        # print(model.summary())
 
         #Get the predictions
         predictions = model.predict(XoutSample)
         predictions.plot()
         plt.savefig('predict_out.png')
+
+        self.logger.info("Model %s generated. Ending AutoTraining Module..." % self.filename)
 
     def start(self):
         self.run_training()
