@@ -15,7 +15,7 @@ class RsiCalculus:
         self.ws_bmex = ws
         self.instrument_bmex = instrument
         self.matrix_bmex_ticker = [None] * 5
-        self.depth = 10  # how deep will it go in the orderbook
+        self.depth = 15  # how deep will it go in the orderbook
         self.ts_cached = 0
         self.graph_rsi = graph
         self.rsi = 50
@@ -209,5 +209,5 @@ class RsiCalculus:
     def get_rsi_value(self):
         return self.rsi
 
-    def get_rsi_status(self):
+    def get_status(self):
         return self.rsi_ready
