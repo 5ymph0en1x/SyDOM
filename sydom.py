@@ -188,7 +188,7 @@ def fire_buy(neutralize=False):
         time_actual = get_time()
         if server_time != get_time():
             server_time = get_time()
-            if ((time_actual > time_cached + 10000) and neutralize is False) \
+            if ((time_actual > time_cached + 120000) and neutralize is False) \
                     or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 logger.info('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
@@ -241,7 +241,7 @@ def fire_sell(neutralize=False):
         time_actual = get_time()
         if server_time != get_time():
             server_time = get_time()
-            if ((time_actual > time_cached + 10000) and neutralize is False) \
+            if ((time_actual > time_cached + 120000) and neutralize is False) \
                     or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 logger.info('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
