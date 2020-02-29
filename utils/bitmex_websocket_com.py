@@ -108,7 +108,10 @@ class BitMEXWebsocket:
     def open_positions(self):
         '''Get recent trades.'''
         # print("positions", self.data['position'][0]['currentQty'])
-        return self.data['position'][0]['currentQty']
+        if not self.data['position']:  # For new accounts... Thanks Sam !
+            return 0
+        else:
+            return self.data['position'][0]['currentQty']
 
     def open_price(self):
         '''Get recent trades.'''
