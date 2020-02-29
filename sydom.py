@@ -282,6 +282,7 @@ def main():
 
     if path.exists(model_file):
         model_exist = True
+        annihilator.start_annihilator()
     else:
         model_exist = False
 
@@ -289,7 +290,7 @@ def main():
         bb.start_bb()
 
     rsi.start_rsi()
-    annihilator.start_annihilator()
+    
 
     while ws_bmex.ws.sock.connected:
         try:
@@ -309,6 +310,8 @@ def main():
                     AutoTrainModel(model_file, instrument_bmex).start()
                     model_exist = True
                     force_training = False
+                    if annihilator.get_status() is False:
+                        annihilator.start_annihilator()
                 hour_cached = hour_actual
                 odbk_cached = matrix_bmex_ticker[3]
                 if annihilator.get_status() and rsi.get_status():
