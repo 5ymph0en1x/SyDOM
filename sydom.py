@@ -19,16 +19,16 @@ API_key_bmex = ''
 API_secret_bmex = ''
 ############
 instrument_bmex = "ETHUSD"
-pos_size = 30
-max_pos = 300
+pos_size = 10
+max_pos = 100
 nb_cores = 12  # Number of processor cores
 time_to_train = 6  # Time in server hours to retrain the model
 force_training = False  # Force model training at launch
 model_file = "hft_model_ETHUSD.pickle"
 model_thr_1 = 0.050  # Use rsi for confirmation
 model_thr_2 = 0.100  # Skip rsi
-rsi_thr_upper = 90
-rsi_thr_downer = 10
+rsi_thr_upper = 80
+rsi_thr_downer = 20
 spread = 2  # Spread to maintain during limit order management
 bb_period = 20  # Bollinger Bands periods
 bb_protect = True  # Activate Bollinger Bands protection
@@ -182,13 +182,14 @@ def fire_buy(neutralize=False):
     bid_cached = matrix_bmex_ticker[2]
     time_cached = get_time()
     server_time = 0
-    while len(ws_bmex.open_stops()) != 0 and annihilator.get_verdict() >= 0:
+    while len(ws_bmex.open_stops()) != 0 and (annihilator.get_verdict() >= 0 or neutralize is True):
         matrix_bmex_ticker[1] = get_ask(spread)
         matrix_bmex_ticker[2] = get_bid(spread)
         time_actual = get_time()
         if server_time != get_time():
             server_time = get_time()
             if ((time_actual > time_cached + 120000) and neutralize is False) \
+                    or (bb.get_verdict() == 1 and neutralize is False) \
                     or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 logger.info('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
@@ -210,6 +211,7 @@ def fire_buy(neutralize=False):
             continue
     if annihilator.get_verdict() < 0:
         client.Order.Order_cancelAll().result()
+        logger.info('Initial Timer Failed: Annihilator switched -> ' + str(annihilator.get_verdict()))
         return False
     return True
 
@@ -235,13 +237,14 @@ def fire_sell(neutralize=False):
     ask_cached = matrix_bmex_ticker[1]
     time_cached = get_time()
     server_time = 0
-    while len(ws_bmex.open_stops()) != 0 and annihilator.get_verdict() <= 0:
+    while len(ws_bmex.open_stops()) != 0 and (annihilator.get_verdict() <= 0 or neutralize is True):
         matrix_bmex_ticker[1] = get_ask(spread)
         matrix_bmex_ticker[2] = get_bid(spread)
         time_actual = get_time()
         if server_time != get_time():
             server_time = get_time()
             if ((time_actual > time_cached + 120000) and neutralize is False) \
+                    or (bb.get_verdict() == -1 and neutralize is False) \
                     or (bb.get_verdict() != 1 and bb.get_verdict() != -1 and neutralize is True):
                 logger.info('Initial Timer Failed !')
                 client.Order.Order_cancelAll().result()
@@ -263,6 +266,7 @@ def fire_sell(neutralize=False):
             continue
     if annihilator.get_verdict() > 0:
         client.Order.Order_cancelAll().result()
+        logger.info('Initial Timer Failed: Annihilator switched -> ' + str(annihilator.get_verdict()))
         return False
     return True
 
@@ -314,22 +318,22 @@ def main():
                         bb_verdict = bb.get_verdict()
                     else:
                         bb_verdict = 0
-                    if ((verdict == 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) \
+                    if ((verdict >= 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) \
                             and bb_verdict != 1 and bb_verdict != -1:
                         if abs(ws_bmex.open_positions()) < max_pos\
                                 or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() < 0):
                             logger.info('BUY ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
-                            # buy_action = fire_buy()
-                            # if buy_action is True:
-                            #     logger.info('Balance: ' + str(ws_bmex.wallet_balance()))
-                    if ((verdict == -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) \
+                            buy_action = fire_buy()
+                            if buy_action is True:
+                                logger.info('Balance: ' + str(ws_bmex.wallet_balance()))
+                    if ((verdict <= -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) \
                             and bb_verdict != 1 and bb_verdict != -1:
                         if abs(ws_bmex.open_positions()) < max_pos\
                                 or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() > 0):
                             logger.info('SELL ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
-                            # sell_action = fire_sell()
-                            # if sell_action is True:
-                            #     logger.info('Balance: ' + str(ws_bmex.wallet_balance()))
+                            sell_action = fire_sell()
+                            if sell_action is True:
+                                logger.info('Balance: ' + str(ws_bmex.wallet_balance()))
                     if (bb_verdict == 1 or bb_verdict == -1) and ws_bmex.open_positions() != 0:
                         logger.info('Neutralization Starting')
                         if ws_bmex.open_positions() > 0:
@@ -353,8 +357,8 @@ def main():
             if len(ws_bmex.open_stops()) != 0:
                 client.Order.Order_cancelAll().result()
             sleep(1)
-            # pass
-            raise
+            pass
+            # raise
 
 
 if __name__ == '__main__':
