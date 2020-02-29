@@ -172,13 +172,13 @@ class Annihilator:
                         score = self.annihilator(askp, asks, bidp, bids, vol, ts)
                         if score >= self.thr_1:
                             self.verdict = 0.5
-                        elif score >= self.thr_2:
+                        if score >= self.thr_2:
                             self.verdict = 1
-                        elif score <= -self.thr_1:
+                        if score <= -self.thr_1:
                             self.verdict = -0.5
-                        elif score <= -self.thr_2:
+                        if score <= -self.thr_2:
                             self.verdict = -1
-                        else:
+                        if self.thr_1 > score > -self.thr_2:
                             self.verdict = 0
                         self.ready = True
 
