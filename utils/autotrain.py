@@ -28,7 +28,6 @@ class AutoTrainModel:
         self.h = None
         self.l = None
 
-
     @jit
     def vwap(self):
         tmp1 = np.zeros_like(self.v)
@@ -37,7 +36,6 @@ class AutoTrainModel:
             tmp1[i] = tmp1[i - 1] + self.v[i] * (self.h[i] + self.l[i]) / 2
             tmp2[i] = tmp2[i - 1] + self.v[i]
         return tmp1 / tmp2
-
 
     def run_training(self):
 

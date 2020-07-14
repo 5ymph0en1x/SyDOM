@@ -4,6 +4,7 @@ import pandas as pd
 from datetime import datetime as dt, timezone
 import matplotlib.pyplot as plt
 import threading
+from time import sleep
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 plt.style.use('ggplot')
@@ -150,57 +151,62 @@ class RsiCalculus:
         o = 0
         line1 = []
         self.logger.info('Starting RSI computation...')
-        while self.ws_bmex.ws.sock.connected:
-            DT = self.ws_bmex.get_instrument()['timestamp']
-            dt2ts = dt.strptime(DT, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc).timestamp()
-            self.matrix_bmex_ticker[0] = int(dt2ts * 1000)  # (dt2ts - dt(1970, 1, 1)) / timedelta(seconds=1000)
-            dom_size = self.get_all_bid_size(self.depth) - self.get_all_ask_size(self.depth)
-            if dom_size != dom_size_cached:
-                dom_size_cached = dom_size
-                self.matrix_bmex_ticker[1] = self.ws_bmex.get_instrument()['askPrice']
-                self.matrix_bmex_ticker[2] = self.ws_bmex.get_instrument()['bidPrice']
-                self.matrix_bmex_ticker[3] = self.get_ask_size(0)
-                self.matrix_bmex_ticker[4] = self.get_bid_size(0)
-                self.ts_cached = self.matrix_bmex_ticker[0]
-                dom_size_array[n] = dom_size
-                # print('DOM size Array: ' + str(dom_size_array))
-                n += 1
-                if n >= tick_clock:
-                    # dom_candle_array.loc[0]['high'] = max(dom_size_array)
-                    # dom_candle_array.loc[0]['low'] = min(dom_size_array)
-                    # dom_candle_array.loc[0]['open'] = dom_size_array[0]
-                    n = 0
+        try:
+            while self.ws_bmex.ws.sock.connected:
+                DT = self.ws_bmex.get_instrument()['timestamp']
+                dt2ts = dt.strptime(DT, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc).timestamp()
+                self.matrix_bmex_ticker[0] = int(dt2ts * 1000)  # (dt2ts - dt(1970, 1, 1)) / timedelta(seconds=1000)
+                dom_size = self.get_all_bid_size(self.depth) - self.get_all_ask_size(self.depth)
+                if dom_size != dom_size_cached:
+                    dom_size_cached = dom_size
+                    self.matrix_bmex_ticker[1] = self.ws_bmex.get_instrument()['askPrice']
+                    self.matrix_bmex_ticker[2] = self.ws_bmex.get_instrument()['bidPrice']
+                    self.matrix_bmex_ticker[3] = self.get_ask_size(0)
+                    self.matrix_bmex_ticker[4] = self.get_bid_size(0)
+                    self.ts_cached = self.matrix_bmex_ticker[0]
+                    dom_size_array[n] = dom_size
                     # print('DOM size Array: ' + str(dom_size_array))
-                    dom_candle_array.iloc[0].at['close'] = dom_size_array[tick_clock-1]
-                    if o >= rsi_period + 3:
-                        offset = dom_candle_array.close + abs(value_min_cached)
-                        value_min = min(offset)
-                        if value_min < 0:
-                            to_rsi = dom_candle_array.close + abs(value_min)
-                            value_min_cached += value_min
-                        else:
-                            to_rsi = dom_candle_array.close
-                        to_rsi_ = np.array(to_rsi)
-                        to_rsi_ = np.flip(to_rsi_, 0)
-                        dom_rsi = self.get_rsi(to_rsi_, rsi_period)
-                        self.rsi = dom_rsi[-1]
-                        self.rsi_ready = True
-                        if self.graph_rsi is True:
-                            y_vec[-1] = self.rsi
-                            line1 = self.live_plotter(x_vec, y_vec, line1, "DOM RSI IN REAL TIME")
-                            y_vec = np.append(y_vec[1:], 0.0)
-                        dom_candle_array = dom_candle_array[:-1]
-                        dom_candle_array.loc[len(dom_candle_array)] = 0
-                        dom_candle_array = dom_candle_array.shift()
-                    if o <= rsi_period + 3:
-                        if o < rsi_period + 3:
-                            # print('Adding one period: ' + str(dom_candle_array.close.to_list()))
+                    n += 1
+                    if n >= tick_clock:
+                        # dom_candle_array.loc[0]['high'] = max(dom_size_array)
+                        # dom_candle_array.loc[0]['low'] = min(dom_size_array)
+                        # dom_candle_array.loc[0]['open'] = dom_size_array[0]
+                        n = 0
+                        # print('DOM size Array: ' + str(dom_size_array))
+                        dom_candle_array.iloc[0].at['close'] = dom_size_array[tick_clock-1]
+                        if o >= rsi_period + 3:
+                            offset = dom_candle_array.close + abs(value_min_cached)
+                            value_min = min(offset)
+                            if value_min < 0:
+                                to_rsi = dom_candle_array.close + abs(value_min)
+                                value_min_cached += value_min
+                            else:
+                                to_rsi = dom_candle_array.close
+                            to_rsi_ = np.array(to_rsi)
+                            to_rsi_ = np.flip(to_rsi_, 0)
+                            dom_rsi = self.get_rsi(to_rsi_, rsi_period)
+                            self.rsi = dom_rsi[-1]
+                            self.rsi_ready = True
+                            if self.graph_rsi is True:
+                                y_vec[-1] = self.rsi
+                                line1 = self.live_plotter(x_vec, y_vec, line1, "DOM RSI IN REAL TIME")
+                                y_vec = np.append(y_vec[1:], 0.0)
                             dom_candle_array = dom_candle_array[:-1]
                             dom_candle_array.loc[len(dom_candle_array)] = 0
                             dom_candle_array = dom_candle_array.shift()
                         if o <= rsi_period + 3:
-                            o += 1
-                    # print('Rebooting')
+                            if o < rsi_period + 3:
+                                # print('Adding one period: ' + str(dom_candle_array.close.to_list()))
+                                dom_candle_array = dom_candle_array[:-1]
+                                dom_candle_array.loc[len(dom_candle_array)] = 0
+                                dom_candle_array = dom_candle_array.shift()
+                            if o <= rsi_period + 3:
+                                o += 1
+                        # print('Rebooting')
+        except Exception as e:
+            self.logger.error(str(e))
+            sleep(1)
+            pass
 
     def start_rsi(self):
         self.thread.daemon = True

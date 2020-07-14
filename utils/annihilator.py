@@ -185,7 +185,7 @@ class Annihilator:
             except Exception as e:
                 self.logger.error(str(e))
                 sleep(1)
-                pass
+                raise
 
     def start_annihilator(self):
         self.thread.daemon = True
