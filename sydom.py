@@ -562,14 +562,14 @@ def main():
                     else:
                         bb_verdict = 0
                     if ((verdict >= 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) \
-                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict < 0:
+                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict > 0:
                         if paper_trading is False:
                             if abs(ws_bmex.open_positions()) < max_pos\
                                     or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() < 0):
                                 if contrarian is False:
                                     logger.info('BUY ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
                                     buy_action = fire_buy()
-                                else:
+                                elif abs(ws_bmex.open_positions()) < max_pos:
                                     logger.info('CONTRARIAN SELL ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
                                     buy_action = fire_sell(contrarian_=True)
                                 if buy_action is True:
@@ -585,7 +585,7 @@ def main():
                                         logger.info('BUY ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(
                                             round(verdict, 3)))
                                         fire_buy()
-                                    else:
+                                    elif abs(current_size) < max_pos:
                                         logger.info(
                                             'CONTRARIAN SELL ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(
                                                 round(verdict, 3)))
@@ -601,14 +601,14 @@ def main():
                                             round(verdict, 3)))
                                     fire_sell(contrarian_=True)
                     if ((verdict <= -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) \
-                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict > 0:
+                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict < 0:
                         if paper_trading is False:
                             if abs(ws_bmex.open_positions()) < max_pos\
                                     or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() > 0):
                                 if contrarian is False:
                                     logger.info('SELL ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
                                     sell_action = fire_sell()
-                                else:
+                                elif abs(ws_bmex.open_positions()) < max_pos:
                                     logger.info('CONTRARIAN BUY ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(round(verdict, 3)))
                                     sell_action = fire_buy(contrarian_=True)
                                 if sell_action is True:
@@ -624,7 +624,7 @@ def main():
                                         logger.info('SELL ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(
                                             round(verdict, 3)))
                                         fire_sell()
-                                    else:
+                                    elif abs(current_size) < max_pos:
                                         logger.info(
                                             'CONTRARIAN BUY ! RSI: ' + str(round(rsi_value, 2)) + ' - Verdict: ' + str(
                                                 round(verdict, 3)))
