@@ -562,7 +562,7 @@ def main():
                     else:
                         bb_verdict = 0
                     if ((verdict >= 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) \
-                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict > 0:
+                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict < 0:
                         if paper_trading is False:
                             if abs(ws_bmex.open_positions()) < max_pos\
                                     or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() < 0):
@@ -601,7 +601,7 @@ def main():
                                             round(verdict, 3)))
                                     fire_sell(contrarian_=True)
                     if ((verdict <= -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) \
-                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict < 0:
+                            and bb_verdict != 1 and bb_verdict != -1 and ml_verdict > 0:
                         if paper_trading is False:
                             if abs(ws_bmex.open_positions()) < max_pos\
                                     or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() > 0):
