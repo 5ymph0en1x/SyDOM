@@ -492,9 +492,10 @@ class ML_Calculus:
                     start_ts = (datetime.utcnow()+timedelta(minutes=0)).strftime("%Y-%m-%d %H:%M:00")
                     end_ts = (datetime.utcnow()+timedelta(minutes=9)).strftime("%Y-%m-%d %H:%M:00")
                     # print('Start:', start_ts, '/ End:', end_ts)
+                    p = []
                     p = self.Main(['pair_m1.csv', start_ts, end_ts, 'm'])
-                    p_close = p.loc[p.shape[0]-1, 'Close']
-                    p_open = p.loc[0, 'Close']
+                    p_open = p.loc[p.shape[0]-1, 'Close']
+                    p_close = p.loc[0, 'Close']
                     self.p_verdict = p_open - p_close
                     if self.p_verdict < 0:
                         logger.info('Machine learning : UP !')
