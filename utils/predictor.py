@@ -488,12 +488,15 @@ class ML_Calculus:
                             os.remove('pair_m1.csv')
                         retrieve_data(self.instrument_bmex, client)
                         first = False
-                    # print('Launching Machine learning Module...')
+                    # print('Launching Machine Learning Module...')
                     start_ts = (datetime.utcnow()+timedelta(minutes=0)).strftime("%Y-%m-%d %H:%M:00")
-                    end_ts = (datetime.utcnow()+timedelta(minutes=9)).strftime("%Y-%m-%d %H:%M:00")
+                    end_ts = (datetime.utcnow()+timedelta(minutes=3)).strftime("%Y-%m-%d %H:%M:00")
                     # print('Start:', start_ts, '/ End:', end_ts)
-                    p = []
                     p = self.Main(['pair_m1.csv', start_ts, end_ts, 'm'])
+                    if p is None:
+                        self.logger.warning('Predictor: Error p format')
+                        continue
+                    # print(p)
                     p_open = p.loc[p.shape[0]-1, 'Close']
                     p_close = p.loc[0, 'Close']
                     self.p_verdict = p_open - p_close
