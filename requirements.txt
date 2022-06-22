@@ -1,7 +1,7 @@
 # This file is used by pip to install required python packages
 # Usage: pip3 install -r requirements.txt
 
-numpy == 1.18.1
+numpy == 1.22.0
 numba == 0.48.0
 pandas == 1.0.1
 matplotlib == 3.1.3
