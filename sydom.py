@@ -16,21 +16,21 @@ import os
 
 ######################################
 ############
-API_path_bmex = 'wss://www.bitmex.com/realtime'
+API_path_bmex = 'wss://ws.bitmex.com/realtime'
 API_key_bmex = ''
 API_secret_bmex = ''
 ############
 instrument_bmex = "ETHUSD"
-pos_size = 30
-max_pos = 300
-paper_trading = False
-contrarian = True  # True for the week-ends (experimental)
-nb_cores = 12  # Number of processor cores
+pos_size = 100
+max_pos = 500
+paper_trading = True
+contrarian = False  # True for the week-ends (experimental)
+nb_cores = 8  # Number of processor cores
 time_to_train = 6  # Time in server hours to retrain the model
 force_training = False  # Force model training at launch and then exit / useful when running SyDOM the first time
 model_file = "hft_model_ETHUSD.pickle"
-model_thr_1 = 0.025  # Use rsi for confirmation
-model_thr_2 = 0.040  # Skip rsi
+model_thr_1 = 0.055  # Use rsi for confirmation
+model_thr_2 = 0.075  # Skip rsi
 rsi_thr_upper = 80
 rsi_thr_downer = 20
 spread = 2  # Spread to maintain during limit order management
@@ -48,13 +48,13 @@ client = bitmex.bitmex(test=False, api_key=API_key_bmex, api_secret=API_secret_b
 bb = BollingerCalculus(instrument=instrument_bmex, period=bb_period, test=False, api_key=API_key_bmex, api_secret=API_secret_bmex)
 rsi = RsiCalculus(ws=ws_bmex, instrument=instrument_bmex, graph=graph_rsi)
 annihilator = Annihilator(ws=ws_bmex, instrument=instrument_bmex, model_file=model_file, thr_1=model_thr_1, thr_2=model_thr_2)
-learning = ML_Calculus(instrument=instrument_bmex, API_key=API_key_bmex, API_secret=API_secret_bmex)
+learning = ML_Calculus(client=client, instrument=instrument_bmex, API_key=API_key_bmex, API_secret=API_secret_bmex)
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def handler():
+def handler(signum, frame):
     logger.info(" This is the end !")
     ws_bmex.exit()
     exit(0)
