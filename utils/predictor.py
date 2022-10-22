@@ -7,7 +7,7 @@ import numpy as np
 # Used to read data from CSV file
 import pandas as pd
 # Used to convert date string to numerical value
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from time import sleep
 from utils import bitmex_http_com as bitmex
 # Used to plot data
@@ -95,7 +95,7 @@ def ParseData(path):
     for i, j in enumerate(dateStr):
         # Date strings are of the form year-month-day
         j.replace('+00:00', '+0000')
-        D[i] = datetime.strptime(j, '%Y-%m-%d %H:%M:%S%z').replace(tzinfo=None).timestamp()
+        D[i] = datetime.strptime(j, '%Y-%m-%d %H:%M:%S%z').replace(tzinfo=timezone.utc).timestamp()
     # Add the newly parsed column to the dataframe
     df['Timestamp'] = D
     # Remove any unused columns (axis = 1 specifies fields are columns)
@@ -396,7 +396,8 @@ class Predictor:
 
 class ML_Calculus:
 
-    def __init__(self, instrument, API_key, API_secret):
+    def __init__(self, client, instrument, API_key, API_secret):
+        self.client = client
         self.instrument_bmex = instrument
         self.API_key_bmex = API_key
         self.API_secret_bmex = API_secret
@@ -476,17 +477,16 @@ class ML_Calculus:
     def Engine(self):
         first = True
         datetime_minute_cached = None
-        client = bitmex.bitmex(test=False, api_key=self.API_key_bmex, api_secret=self.API_secret_bmex)
         logger.info('Starting machine learning computation...')
         try:
             while True:
                 if datetime_minute_cached != datetime.now().minute:
                     if first is False:
-                        fetch_data(self.instrument_bmex, client)
+                        fetch_data(self.instrument_bmex, self.client)
                     if first is True:
                         if path.exists('pair_m1.csv'):
                             os.remove('pair_m1.csv')
-                        retrieve_data(self.instrument_bmex, client)
+                        retrieve_data(self.instrument_bmex, self.client)
                         first = False
                     # print('Launching Machine Learning Module...')
                     start_ts = (datetime.utcnow()+timedelta(minutes=0)).strftime("%Y-%m-%d %H:%M:00")
@@ -494,7 +494,7 @@ class ML_Calculus:
                     # print('Start:', start_ts, '/ End:', end_ts)
                     p = self.Main(['pair_m1.csv', start_ts, end_ts, 'm'])
                     if p is None:
-                        self.logger.warning('Predictor: Error p format')
+                        logger.warning('Predictor: Error p format')
                         continue
                     # print(p)
                     p_open = p.loc[p.shape[0]-1, 'Close']
