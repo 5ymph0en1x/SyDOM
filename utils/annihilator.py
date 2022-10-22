@@ -178,7 +178,7 @@ class Annihilator:
                             self.verdict = -0.5
                         if score <= -self.thr_2:
                             self.verdict = -1
-                        if self.thr_1 > score > -self.thr_2:
+                        if self.thr_1 > score > -self.thr_1:
                             self.verdict = 0
                         self.ready = True
 
