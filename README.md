@@ -11,7 +11,9 @@ Warning : The daily model generation can take up to 2 hours. You can speed up th
 
 Configuration
 
-Just replace the key and secret fields with yours, adjust the number of contracts traded and the action thresholds (see below) in sydom.py
+Use python 3.10
+
+Replace the key and secret fields with yours, adjust the number of contracts traded and the action thresholds (see below) in sydom.py
 
 Run `pip install -r requirements.txt`
 
