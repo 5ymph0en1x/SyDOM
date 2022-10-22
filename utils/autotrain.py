@@ -21,7 +21,7 @@ display_graph = False
 class AutoTrainModel:
 
     def __init__(self, filename, symbol):
-        self.logger = logging.getLogger(__name__)
+        self.logger = logging
         self.filename = filename
         self.symbol = symbol
         self.v = None
@@ -46,7 +46,15 @@ class AutoTrainModel:
         data1_sorted = pd.DataFrame()
         data2_sorted = pd.DataFrame()
 
-        start = dt.utcnow() - timedelta(days=1)
+        dt2ts = dt.utcnow()
+        hour_actual = dt2ts.hour
+        
+        if 0 <= hour_actual < 6:
+            delta = 2
+        else:
+            delta = 1
+        
+        start = dt.utcnow() - timedelta(days=delta)
         current = start
         end = start - timedelta(days=time_span-1)
 
@@ -223,8 +231,11 @@ class AutoTrainModel:
         featureList.append('R0')
         DF.dropna(inplace=True)
 
-        XoutSample = DF[featureList].iloc[int(len(DF)/2):]
-        XoutSample = sm.add_constant(XoutSample) ## add an intercept (beta_0) to our model
+        st = int(len(DF)/2)
+        # en = int(len(DF) - 1)
+        # self.logger.info("start: " + str(st) + " / end: " + str(en))
+        XoutSample = DF[featureList].iloc[st:]
+        XoutSample = sm.add_constant(XoutSample)  # add an intercept (beta_0) to our model
 
         # Build Average Price Change metric that corresponds to return over the next 20 periods
         # 20 periods
@@ -233,7 +244,7 @@ class AutoTrainModel:
         #Regression Analysis
         DF.dropna(inplace=True)
         X = DF[featureList]
-        X = sm.add_constant(X) ## add an intercept (beta_0) to our model
+        X = sm.add_constant(X)  # add an intercept (beta_0) to our model
         y = DF["AveragePriceChange20"]
 
         # Calibrate
@@ -247,6 +258,7 @@ class AutoTrainModel:
         #Get the predictions
         predictions = model.predict(XoutSample)
         predictions.plot()
+        # plt.show()
         plt.savefig('predict_out.png')
 
         self.logger.info("Model %s generated. Ending AutoTraining Module..." % self.filename)
