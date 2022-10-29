@@ -100,6 +100,16 @@ class BitMEXWebsocket:
         # Filter to only open orders (leavesQty > 0) and those that we actually placed
         return [o for o in orders if str(o['clOrdID']).startswith(clOrdIDPrefix) and o['leavesQty'] > 0]
 
+    def open_orders_raw(self, instrument_bmex):
+        '''Get all your open orders.'''
+        # print(self.data['order'])
+        if not self.data['order']:
+            return []
+        else:
+            orders = self.data['order']
+            # Filter to only open orders (leavesQty > 0) and those that we actually placed
+            return [o for o in orders if str(o['symbol']) == instrument_bmex and o['leavesQty'] != 0]
+
     def recent_trades(self):
         '''Get recent trades.'''
         # print(self.data['trade'][-1])
@@ -138,8 +148,8 @@ class BitMEXWebsocket:
                                          on_error=self.__on_error,
                                          header=self.__get_auth())
 
-        self.wst = threading.Thread(target=lambda: self.ws.run_forever())
-        self.wst.setDaemon(True)
+        self.wst = threading.Thread(target=self.ws.run_forever)
+        self.wst.daemon = True
         self.wst.start()
         self.logger.debug("Started thread")
 

@@ -89,7 +89,7 @@ class BollingerCalculus:
                                          + ' / Upper: ' + str(round(last_data.iloc[0].at['Upper_Band'], 2))
                                          + ' / Downer: ' + str(round(last_data.iloc[0].at['Lower_Band'], 2)))
                         self.verdict = 0
-                sleep(0.1)
+                sleep(0.005)
         except Exception as e:
             self.logger.error(str(e))
             sleep(1)

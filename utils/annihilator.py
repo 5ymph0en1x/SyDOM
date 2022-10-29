@@ -4,7 +4,9 @@ import pandas as pd
 from datetime import datetime as dt
 import threading
 import statsmodels.api as sm
+import warnings
 
+warnings.filterwarnings('ignore')
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 
@@ -120,7 +122,7 @@ class Annihilator:
         featureList.append('R0')
         resampledDF.dropna(inplace=True)
         X = resampledDF[featureList]
-        X = sm.add_constant(X)  ## add an intercept (beta_0) to our model
+        X = sm.add_constant(X, has_constant='add')  ## add an intercept (beta_0) to our model
         if X.shape == (5, 14):
             model = sm.load(self.model)
             prediction = model.predict(X)
@@ -128,6 +130,7 @@ class Annihilator:
             return prediction.iloc[0]
         else:
             self.logger.warning('Annihilator: Error X format -> ' + str(X.shape))
+            sleep(0.05)
             return 0
 
     def compute_annihilator(self):
@@ -142,8 +145,8 @@ class Annihilator:
         ts = [None] * buff
         m = 0
         self.logger.info('Starting Annihilator module...')
-        while self.ws_bmex.ws.sock.connected:
-            try:
+        try:
+            while True:
                 dt2ts = dt.utcnow().timestamp()
                 matrix_bmex_ticker[0] = int(dt2ts * 1000)
                 matrix_bmex_ticker[1] = self.get_ask(0)
@@ -181,15 +184,23 @@ class Annihilator:
                         if self.thr_1 > score > -self.thr_1:
                             self.verdict = 0
                         self.ready = True
+                sleep(0.005)
 
-            except Exception as e:
-                self.logger.error(str(e))
-                sleep(1)
-                raise
+        except Exception as e:
+            self.logger.error(str(e))
+            sleep(1)
+            raise
 
     def start_annihilator(self):
-        self.thread.daemon = True
+        self.thread.daemon = False
+        self.ready = True
         self.thread.start()
+
+    def stop_annihilator(self):
+        self.ready = False
+        while self.thread.is_alive() is True:
+            self.thread.join()
+            sleep(1.0)
 
     def get_verdict(self):
         return self.verdict

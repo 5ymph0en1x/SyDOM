@@ -13,7 +13,7 @@ warnings.filterwarnings('ignore')
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
 ##################
-time_span = 3  # Time in days covered by analysis
+time_span = 3  # Time in days covered by the analysis for the model's creation (non-ML)
 display_graph = False
 ##################
 
@@ -21,7 +21,7 @@ display_graph = False
 class AutoTrainModel:
 
     def __init__(self, filename, symbol):
-        self.logger = logging
+        self.logger = logging.getLogger(__name__)
         self.filename = filename
         self.symbol = symbol
         self.v = None
@@ -48,12 +48,12 @@ class AutoTrainModel:
 
         dt2ts = dt.utcnow()
         hour_actual = dt2ts.hour
-        
+
         if 0 <= hour_actual < 6:
             delta = 2
         else:
             delta = 1
-        
+
         start = dt.utcnow() - timedelta(days=delta)
         current = start
         end = start - timedelta(days=time_span-1)
@@ -257,11 +257,32 @@ class AutoTrainModel:
 
         #Get the predictions
         predictions = model.predict(XoutSample)
-        predictions.plot()
+        raw = predictions.plot()
+        data = pd.DataFrame(raw.axes.lines[0].get_ydata())
+        data.to_csv('data.csv', index=False)
+        data = pd.read_csv(r'data.csv')
+        data_plus = 0
+        data_minus = 0
+        j = k = 0
+        for i in range(len(data)):
+            if data['0'][i] > 0:
+                data_plus += data['0'][i]
+                j += 1
+            if data['0'][i] < 0:
+                data_minus += data['0'][i]
+                k += 1
+        thr1 = round((data_plus / j + abs(data_minus) / k) / 2, 5)
+        thr2 = round(thr1 * 2, 5)
+        self.logger.info("model_thr_1: " + str(thr1) + " / model_thr_2: " + str(thr2))
+        thresholds = pd.DataFrame([thr1, thr2])
+        thresholds.to_csv(str(self.symbol) + "_thresholds.csv")
+        plt.savefig(str(self.symbol) + '_predict_out.png', dpi=300)
         # plt.show()
-        plt.savefig('predict_out.png')
 
         self.logger.info("Model %s generated. Ending AutoTraining Module..." % self.filename)
 
+        return thr1, thr2
+
     def start(self):
-        self.run_training()
+        thr1, thr2 = self.run_training()
+        return thr1, thr2

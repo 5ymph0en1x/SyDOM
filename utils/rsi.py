@@ -138,6 +138,7 @@ class RsiCalculus:
         return array
 
     def compute_rsi(self):
+        self.rsi_ready = False
         tick_clock = 1
         rsi_period = 14
         size = 100
@@ -152,7 +153,7 @@ class RsiCalculus:
         line1 = []
         self.logger.info('Starting RSI computation...')
         try:
-            while self.ws_bmex.ws.sock.connected:
+            while True:
                 DT = self.ws_bmex.get_instrument()['timestamp']
                 dt2ts = dt.strptime(DT, '%Y-%m-%dT%H:%M:%S.%fZ').replace(tzinfo=timezone.utc).timestamp()
                 self.matrix_bmex_ticker[0] = int(dt2ts * 1000)  # (dt2ts - dt(1970, 1, 1)) / timedelta(seconds=1000)
@@ -202,7 +203,7 @@ class RsiCalculus:
                                 dom_candle_array = dom_candle_array.shift()
                             if o <= rsi_period + 3:
                                 o += 1
-                        # print('Rebooting')
+                sleep(0.005)
         except Exception as e:
             self.logger.error(str(e))
             sleep(1)
