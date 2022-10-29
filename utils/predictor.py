@@ -382,7 +382,7 @@ class ML_Calculus:
         self.history = Historical_Caching(ws_bmex, rest, instrument, history_count)
         self.thread = threading.Thread(target=self.Engine)
         self.R = KNeighborsRegressor(n_neighbors=10, weights='distance', algorithm='auto', leaf_size=25, n_jobs=-1)
-        self.sp_Classic = Predictor(rmodel=self.R, nPastDays=10)
+        self.sp_Classic = Predictor(rmodel=self.R, nPastDays=120)
         self.logger = logging.getLogger(__name__)
 
     def Main(self, args):

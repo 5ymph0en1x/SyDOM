@@ -183,7 +183,10 @@ class Annihilator:
                             self.verdict = -1
                         if self.thr_1 > score > -self.thr_1:
                             self.verdict = 0
-                        self.ready = True
+                        if self.ready != 2:
+                            self.ready = True
+                        else:
+                            return
                 sleep(0.005)
 
         except Exception as e:
@@ -192,15 +195,16 @@ class Annihilator:
             raise
 
     def start_annihilator(self):
-        self.thread.daemon = False
         self.ready = True
+        self.thread.daemon = True
         self.thread.start()
 
     def stop_annihilator(self):
+        self.ready = 2
+        sleep(5)
+        self.thread.join()
+        self.logger.info("Annihilator Module stopped...")
         self.ready = False
-        while self.thread.is_alive() is True:
-            self.thread.join()
-            sleep(1.0)
 
     def get_verdict(self):
         return self.verdict
