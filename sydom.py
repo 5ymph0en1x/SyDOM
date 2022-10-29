@@ -686,6 +686,7 @@ def fire_sell(instr_bmex, pos_size, contrarian_=False, neutralize=False):
 
 
 def main():
+    global skip_initial_training
     matrix_bmex_ticker = [None] * 4
     odbk_cached = [None]
     hour_cached = None
@@ -727,6 +728,7 @@ def main():
                             thr1 = thr_raw['0'][0]
                             thr2 = thr_raw['0'][1]
                             logger.info("model thr_1: " + str(thr1) + " / model thr_2: " + str(thr2))
+                            skip_initial_training = False
                         except Exception as e:
                             logger.error(str(e))
                             return
