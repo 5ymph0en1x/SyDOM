@@ -398,7 +398,7 @@ def fire_buy(instr_bmex, pos_size, contrarian_=False, neutralize=False):
                 matrix_bmex_ticker[1] = get_ask(spread - 1)
                 matrix_bmex_ticker[2] = get_bid(spread - 1)
                 time_actual = get_time()
-                if ((learning.get_p_verdict() == -1 and contrarian_ is False) or (learning.get_p_verdict() > 0 and contrarian_ is True)) and neutralize is False:
+                if ((learning.get_p_verdict() == 1 and contrarian_ is False) or (learning.get_p_verdict() < 0 and contrarian_ is True)) and neutralize is False:
                     if paper_trading is False:
                         client.Order.Order_cancelAll().result()
                     else:
@@ -576,7 +576,7 @@ def fire_sell(instr_bmex, pos_size, contrarian_=False, neutralize=False):
                 matrix_bmex_ticker[2] = get_bid(spread - 1)
 
                 time_actual = get_time()
-                if ((learning.get_p_verdict() == 1 and contrarian_ is False) or (learning.get_p_verdict() < 0 and contrarian_ is True)) and neutralize is False:
+                if ((learning.get_p_verdict() == -1 and contrarian_ is False) or (learning.get_p_verdict() > 0 and contrarian_ is True)) and neutralize is False:
                     if paper_trading is False:
                         client.Order.Order_cancelAll().result()
                     else:
@@ -756,7 +756,7 @@ def main():
                 else:
                     bb_verdict = 0
 
-                if ((verdict <= -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) and ml_verdict > 0 and bb_verdict != 1:
+                if ((verdict <= -0.5 and rsi_value < rsi_thr_downer) or verdict == -1) and ml_verdict < 0 and bb_verdict != 1:
                     if paper_trading is False:
                         if abs(ws_bmex.open_positions()) < max_pos or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() < 0):
                             if contrarian is False:
@@ -793,7 +793,7 @@ def main():
                                         round(verdict, 3)))
                                 fire_sell(instrument_bmex, pos_size, contrarian_=True)
 
-                if ((verdict >= 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) and ml_verdict < 0 and bb_verdict != -1:
+                if ((verdict >= 0.5 and rsi_value > rsi_thr_upper) or verdict == 1) and ml_verdict > 0 and bb_verdict != -1:
                     if paper_trading is False:
                         if abs(ws_bmex.open_positions()) < max_pos \
                                 or (abs(ws_bmex.open_positions()) >= max_pos and ws_bmex.open_positions() > 0):
