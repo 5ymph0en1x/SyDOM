@@ -510,15 +510,15 @@ class ML_Calculus:
                             k = 0
                             while temp >= 0:
                                 p_close_tx = p.loc[temp, 'Close']
-                                if temp_1 > p_close_tx:
+                                if temp_1 < p_close_tx:
                                     j += 1
-                                elif temp_2 < p_close_tx:
+                                elif temp_2 > p_close_tx:
                                     k += 1
                                 temp_1 = temp_2 = p_close_tx
                                 temp -= 1
-                            if j >= self.periods_pred-1:
+                            if j >= self.periods_pred:
                                 self.p_verdict = -1
-                            elif k >= self.periods_pred-1:
+                            elif k >= self.periods_pred:
                                 self.p_verdict = 1
                             else:
                                 self.p_verdict = 0

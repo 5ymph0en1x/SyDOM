@@ -2,7 +2,7 @@ import time, urllib, hmac, hashlib
 
 
 def generate_nonce():
-    return int(round(time.time() + 3600))
+    return int(round(time.time()) + 5)
 
 
 # Generates an API signature.
@@ -25,8 +25,11 @@ def generate_signature(secret, verb, url, nonce, data):
     if parsedURL.query:
         path = path + '?' + parsedURL.query
 
-    # print "Computing HMAC: %s" % verb + path + str(nonce) + data
-    message = (verb + path + str(nonce) + data).encode('utf-8')
+    if isinstance(data, (bytes, bytearray)):
+        data = data.decode('utf8')
 
-    signature = hmac.new(secret.encode('utf-8'), message, digestmod=hashlib.sha256).hexdigest()
+    # print "Computing HMAC: %s" % verb + path + str(nonce) + data
+    message = bytes(verb + path + str(nonce) + data, 'utf-8')
+
+    signature = hmac.new(bytes(secret, 'utf-8'), message, digestmod=hashlib.sha256).hexdigest()
     return signature

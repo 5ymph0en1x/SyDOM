@@ -31,7 +31,10 @@ class Annihilator:
                 if batch['side'] == 'Sell':
                     list_sell.append(batch)
         list_sell.sort(key=lambda i: i['id'], reverse=True)
-        return list_sell[k]['price']
+        if len(list_sell) >= k + 1:
+            return list_sell[k]['price']
+        else:
+            return 0
 
     def get_ask_size(self, k):
         list_sell = []
@@ -41,7 +44,7 @@ class Annihilator:
                 if batch['side'] == 'Sell':
                     list_sell.append(batch)
         list_sell.sort(key=lambda i: i['id'], reverse=True)
-        if len(list_sell) > k:
+        if len(list_sell) >= k + 1:
             return list_sell[k]['size']
         else:
             return 0
@@ -54,7 +57,10 @@ class Annihilator:
                 if batch['side'] == 'Buy':
                     list_buy.append(batch)
         list_buy.sort(key=lambda i: i['id'])
-        return list_buy[k]['price']
+        if len(list_buy) >= k + 1:
+            return list_buy[k]['price']
+        else:
+            return 0
 
     def get_bid_size(self, k):
         list_buy = []
@@ -64,7 +70,7 @@ class Annihilator:
                 if batch['side'] == 'Buy':
                     list_buy.append(batch)
         list_buy.sort(key=lambda i: i['id'])
-        if len(list_buy) > k:
+        if len(list_buy) >= k + 1:
             return list_buy[k]['size']
         else:
             return 0

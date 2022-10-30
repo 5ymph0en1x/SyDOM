@@ -28,7 +28,7 @@ class APIKeyAuthenticator(Authenticator):
 
     def apply(self, r):
         # 5s grace period in case of clock skew
-        expires = int(time.time() * 1000)
+        expires = int(round(time.time()) + 5)
         r.headers['api-expires'] = str(expires)
         r.headers['api-key'] = self.api_key
         prepared = r.prepare()
