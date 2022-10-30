@@ -23,7 +23,7 @@ Execution
 
 `python sydom.py`
 
-During the first run, the script will automatically generate a model based on the 3 previous days of price action (if you already have an updated daily model -> set skip_initial_training to True). This model is retrained every day at 6:00 AM UTC. Basically, you don't have anything to do once the bot is launched...
+During the first run, the script will automatically generate a model based on the 3 previous days of price action (if you already have an updated daily model -> set `skip_initial_training` to True). This model is retrained every day at 6:00 AM UTC. Basically, you don't have anything to do once the bot is launched...
 
 ------------------------------------
 
